@@ -47,19 +47,28 @@ def main() -> None:
                         else:
                             print(f'{target} not found')
                 else:
-                    directory = executables.get(command)
-
-                    if directory:
+                    if command.startswith('/'):
                         call(
-                            '{}/{} {}'.format(
-                                directory,
+                            '{} {}'.format(
                                 command,
                                 ' '.join(arguments)
                             ),
                             shell=True
                         )
                     else:
-                        print(f'{command}: command not found')
+                        directory = executables.get(command)
+
+                        if directory:
+                            call(
+                                '{}/{} {}'.format(
+                                    directory,
+                                    command,
+                                    ' '.join(arguments)
+                                ),
+                                shell=True
+                            )
+                        else:
+                            print(f'{command}: command not found')
         except (KeyboardInterrupt, EOFError):
             exit(130)
 
