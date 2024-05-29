@@ -50,7 +50,12 @@ def main() -> None:
                 elif command == 'pwd':
                     print(getcwd())
                 elif command == 'cd':
-                    chdir(expanduser(arguments[0]))
+                    directory = arguments[0]
+
+                    try:
+                        chdir(expanduser(directory))
+                    except OSError:
+                        print(f'cd: {directory}: No such file or directory')
                 elif command.startswith('/'):
                     call(
                         '{} {}'.format(
