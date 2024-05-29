@@ -10,7 +10,7 @@ def collect_executables() -> Dict[str, str]:
 
     for directory in getenv('PATH').split(':'):
         executables.update({
-            basename(executable): directory for executable in glob(directory + '/*')
+            basename(executable): directory for executable in glob(directory + '/*') if basename(executable) not in executables
         })
 
     return executables
@@ -46,29 +46,28 @@ def main() -> None:
                             print(f'{target} is {directory}/{target}')
                         else:
                             print(f'{target} not found')
+                elif command.startswith('/'):
+                    call(
+                        '{} {}'.format(
+                            command,
+                            ' '.join(arguments)
+                        ),
+                        shell=True
+                    )
                 else:
-                    if command.startswith('/'):
+                    directory = executables.get(command)
+
+                    if directory:
                         call(
-                            '{} {}'.format(
+                            '{}/{} {}'.format(
+                                directory,
                                 command,
                                 ' '.join(arguments)
                             ),
                             shell=True
                         )
                     else:
-                        directory = executables.get(command)
-
-                        if directory:
-                            call(
-                                '{}/{} {}'.format(
-                                    directory,
-                                    command,
-                                    ' '.join(arguments)
-                                ),
-                                shell=True
-                            )
-                        else:
-                            print(f'{command}: command not found')
+                        print(f'{command}: command not found')
         except (KeyboardInterrupt, EOFError):
             exit(130)
 
