@@ -1,7 +1,7 @@
-from os.path import basename
+from os.path import basename, expanduser
+from os import getenv, getcwd, chdir
 from subprocess import call
 from typing import Dict
-from os import getenv
 from glob import glob
 
 
@@ -18,6 +18,7 @@ def collect_executables() -> Dict[str, str]:
 
 def main() -> None:
     executables = collect_executables()
+    originalwd = getcwd()
 
     while True:
         try:
@@ -37,7 +38,7 @@ def main() -> None:
                 elif command == 'type':
                     target = arguments[0] if arguments else None
 
-                    if target in ('exit', 'echo', 'type'):
+                    if target in ('exit', 'echo', 'type', 'pwd', 'cd'):
                         print(f'{target} is a shell builtin')
                     else:
                         directory = executables.get(target)
@@ -46,6 +47,10 @@ def main() -> None:
                             print(f'{target} is {directory}/{target}')
                         else:
                             print(f'{target} not found')
+                elif command == 'pwd':
+                    print(getcwd())
+                elif command == 'cd':
+                    chdir(expanduser(arguments[0]))
                 elif command.startswith('/'):
                     call(
                         '{} {}'.format(
