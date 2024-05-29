@@ -1,15 +1,23 @@
 from os.path import basename
 from subprocess import call
+from typing import Dict
 from os import getenv
 from glob import glob
 
 
+def collect_executables() -> Dict[str, str]:
+    executables = {}
+
+    for directory in getenv('PATH').split(':'):
+        executables.update({
+            basename(executable): directory for executable in glob(directory + '/*')
+        })
+
+    return executables
+
+
 def main() -> None:
-    executables = {
-        directory: [
-            basename(executable) for executable in glob(directory + '/*')
-        ] for directory in getenv('PATH').split(':')
-    }
+    executables = collect_executables()
 
     while True:
         try:
@@ -17,49 +25,41 @@ def main() -> None:
 
             if not line:
                 print('Could not parse input')
-            elif line[0] == 'exit':
-                exit(
-                    int(line[1]) if len(line) == 2 else 0
-                )
-            elif line[0] == 'echo':
-                print(' '.join(line[1:]))
-            elif line[0] == 'type':
-                target = line[1] if len(line) == 2 else None
-
-                if target in ('exit', 'echo', 'type'):
-                    print(f'{target} is a shell builtin')
-                else:
-                    found = False
-
-                    for directory, execs in executables.items():
-                        if target in execs:
-                            print(f'{target} is {directory}/{target}')
-
-                            found = True
-
-                            break
-
-                    if not found:
-                        print(f'{target} not found')
             else:
-                executable = None
+                command, arguments = line[0], line[1:]
 
-                for directory, execs in executables.items():
-                    if line[0] in execs:
-                        executable = f'{directory}/{line[0]}'
-
-                        break
-
-                if executable:
-                    call(
-                        '{} {}'.format(
-                            executable,
-                            ' '.join(line[1:] if len(line) > 1 else [])
-                        ),
-                        shell=True
+                if command == 'exit':
+                    exit(
+                        int(arguments[0]) if arguments else 0
                     )
+                elif command == 'echo':
+                    print(' '.join(arguments))
+                elif command == 'type':
+                    target = arguments[0] if arguments else None
+
+                    if target in ('exit', 'echo', 'type'):
+                        print(f'{target} is a shell builtin')
+                    else:
+                        directory = executables.get(target)
+
+                        if directory:
+                            print(f'{target} is {directory}/{target}')
+                        else:
+                            print(f'{target} not found')
                 else:
-                    print(f'{line[0]}: command not found')
+                    directory = executables.get(command)
+
+                    if directory:
+                        call(
+                            '{}/{} {}'.format(
+                                directory,
+                                command,
+                                ' '.join(arguments)
+                            ),
+                            shell=True
+                        )
+                    else:
+                        print(f'{command}: command not found')
         except (KeyboardInterrupt, EOFError):
             exit(130)
 
