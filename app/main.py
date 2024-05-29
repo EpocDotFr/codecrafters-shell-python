@@ -18,8 +18,6 @@ def collect_executables() -> Dict[str, str]:
 
 def main() -> None:
     executables = collect_executables()
-    originalwd = getcwd()
-
     while True:
         try:
             line = input('$ ').split(' ')
