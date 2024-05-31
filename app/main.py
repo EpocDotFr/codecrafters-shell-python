@@ -1,7 +1,7 @@
 from os.path import basename, expanduser
 from os import getenv, getcwd, chdir
+from typing import Dict, List
 from subprocess import call
-from typing import Dict
 from glob import glob
 
 
@@ -16,8 +16,19 @@ def collect_executables() -> Dict[str, str]:
     return executables
 
 
+def exec(command: str, arguments: List[str]) -> None:
+    call(
+        '{} {}'.format(
+            command,
+            ' '.join(arguments)
+        ),
+        shell=True
+    )
+
+
 def main() -> None:
     executables = collect_executables()
+
     while True:
         try:
             line = input('$ ').split(' ')
@@ -54,26 +65,13 @@ def main() -> None:
                         chdir(expanduser(directory))
                     except OSError:
                         print(f'cd: {directory}: No such file or directory')
-                elif command.startswith('/'):
-                    call(
-                        '{} {}'.format(
-                            command,
-                            ' '.join(arguments)
-                        ),
-                        shell=True
-                    )
+                elif '/' in command:
+                    exec(command, arguments)
                 else:
                     directory = executables.get(command)
 
                     if directory:
-                        call(
-                            '{}/{} {}'.format(
-                                directory,
-                                command,
-                                ' '.join(arguments)
-                            ),
-                            shell=True
-                        )
+                        exec(directory + '/' + command, arguments)
                     else:
                         print(f'{command}: command not found')
         except (KeyboardInterrupt, EOFError):
