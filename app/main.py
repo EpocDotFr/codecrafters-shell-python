@@ -34,7 +34,7 @@ def main() -> None:
             line = input('$ ').split(' ')
 
             if not line:
-                print('Could not parse input', end='\n')
+                print('Could not parse input')
             else:
                 command, arguments = line[0], line[1:]
 
@@ -43,28 +43,28 @@ def main() -> None:
                         int(arguments[0]) if arguments else 0
                     )
                 elif command == 'echo':
-                    print(' '.join(arguments), end='\n')
+                    print(' '.join(arguments))
                 elif command == 'type':
                     target = arguments[0] if arguments else None
 
                     if target in ('exit', 'echo', 'type', 'pwd', 'cd'):
-                        print(f'{target} is a shell builtin', end='\n')
+                        print(f'{target} is a shell builtin')
                     else:
                         directory = executables.get(target)
 
                         if directory:
-                            print(f'{target} is {directory}/{target}', end='\n')
+                            print(f'{target} is {directory}/{target}')
                         else:
-                            print(f'{target} not found', end='\n')
+                            print(f'{target} not found')
                 elif command == 'pwd':
-                    print(getcwd(), end='\n')
+                    print(getcwd())
                 elif command == 'cd':
                     directory = arguments[0]
 
                     try:
                         chdir(expanduser(directory))
                     except OSError:
-                        print(f'cd: {directory}: No such file or directory', end='\n')
+                        print(f'cd: {directory}: No such file or directory')
                 elif '/' in command:
                     exec(command, arguments)
                 else:
@@ -73,7 +73,7 @@ def main() -> None:
                     if directory:
                         exec(directory + '/' + command, arguments)
                     else:
-                        print(f'{command}: command not found', end='\n')
+                        print(f'{command}: command not found')
         except (KeyboardInterrupt, EOFError):
             exit(130)
 
